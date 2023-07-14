@@ -1,0 +1,77 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "types": [
+      "webpack-env",
+      "mocha",
+      "chai"
+    ],
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "#/*": [
+        "framework/*"
+      ],
+      "%/FrontProto/*": [
+        "Proto/ProtoCPP/HEAD/Proto/FrontProto/*"
+      ],
+      "%/server/*": [
+        "src/servers/overrides/*",
+        "Proto/ProtoCPP/HEAD/Proto/server/*"
+      ],
+      "%JAVA/FrontProto/*": [
+        "Proto/ProtoJAVA/HEAD/Proto/FrontProto/*"
+      ],
+      "%JAVA/server/*": [
+        "src/servers/overrides/java/*",
+        "Proto/ProtoJAVA/HEAD/Proto/server/*"
+      ],
+      "%CICC/FrontProto/*": [
+        "Proto/ProtoCCIC/HEAD/Proto/FrontProto/*"
+      ],
+      "%CICC/server/*": [
+        "src/servers/overrides/cicc/*",
+        "Proto/ProtoCCIC/HEAD/Proto/server/*"
+      ],
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "include": [
+    "low-code/**/*.ts",
+    "low-code/**/*.tsx",
+    "low-code/**/*.vue",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "typings/*.d.ts",
+    "typings/jvui.d.ts",
+    "Proto/ProtoCPP/HEAD/**/server/*.ts",
+    "Proto/ProtoJAVA/HEAD/**/server/*.ts",
+    "Proto/ProtoCCIC/HEAD/**/server/*.ts",
+    "Proto/ProtoCPP/HEAD/**/FrontProto/*.ts",
+    "Proto/ProtoJAVA/HEAD/**/FrontProto/*.ts",
+    "Proto/ProtoCCIC/HEAD/**/FrontProto/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/@types/**/*"
+  ]
+}
