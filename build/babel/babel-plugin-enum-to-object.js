@@ -97,10 +97,10 @@ exports.default = (0, helper_plugin_utils_1.declare)((api, options) => {
                 const constObjVariable = t.variableDeclaration('const', [obj]);
                 path.replaceWith(constObjVariable);
             },
-            Identifier(path, state) {
-                let name = path.node.name;
-                console.error(name, state);
-            }
+            // Identifier(path, state) {
+            //     let name = path.node.name;
+            //     // console.error(name, state);
+            // }
         },
     };
 });

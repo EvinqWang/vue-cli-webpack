@@ -68,12 +68,24 @@ module.exports = {
         // });
         // config.plugin('extract-css').use(miniCssExtractPlugin);
         
+        // 解决webp相对路径引入问题
+        config.module
+            .rule('vue')
+            .use('vue-loader')
+            .tap(options => {
+                return {
+                    ...options,
+                    transformAssetUrls: { img: ['src', 'lazysrc'] },
+                };
+            });
+        
         // 多线程ts检查
         config.plugin('fork-ts-checker').tap(args => {
             args[0].workers = 4;
             args[0].memoryLimit = 4096;
             return args;
         });
+
         // 丑化压缩代码
         // TODO待落地 
         config.plugin('UglifyJsPlugin').use(UglifyJsPlugin, [
