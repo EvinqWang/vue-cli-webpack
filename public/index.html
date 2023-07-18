@@ -6,6 +6,330 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <script>
+            window.__LOG_POOL = [];
+            // 全局写日志，等日志组件加载完就上报
+            window.__jtLogger = function(log) {
+                console.log(log);
+                if (typeof log === 'string') {
+                    log = {
+                        eventid: 'info',
+                        level: 'info',
+                        content: log,
+                    };
+                }
+                if (window.jtLoggerPush) return window.jtLoggerPush(log);
+                window.__LOG_POOL.push(log);
+            };
+            window.APP_RELEASE = '<%= htmlWebpackPlugin.options.build.release %>';
+            window.__jtLogger(
+                [
+                    'runtime_env=<%= htmlWebpackPlugin.options.build.environment %>',
+                    'build_env=<%= htmlWebpackPlugin.options.build.buildEnv %>',
+                    'release=<%= htmlWebpackPlugin.options.build.release %>',
+                    'entry_url=' + location.href,
+                    'timing=' + Date.now(),
+                ].join()
+            );
+            // 关联用户的openid
+            var arr = (document.cookie || '').match(/login_id\s*=\s*([^;]+)/);
+            var loginId = (arr && arr[1]) || '';
+            if (loginId) {
+                window.__jtLogger('login_id=' + loginId);
+            }
+        </script>
+        <script>
+            var stringify = function(value) {
+                var toString = Object.prototype.toString;
+                var isArray =
+                    Array.isArray ||
+                    function(a) {
+                        return toString.call(a) === '[object Array]';
+                    };
+                var escMap = {
+                    '"': '\\"',
+                    '\\': '\\\\',
+                    '\b': '\\b',
+                    '\f': '\\f',
+                    '\n': '\\n',
+                    '\r': '\\r',
+                    '\t': '\\t',
+                };
+                var escFunc = function(m) {
+                    return escMap[m] || '\\u' + (m.charCodeAt(0) + 0x10000).toString(16).substr(1);
+                };
+                var escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
+                var visitedObjs = [];
+                function stringifyLocal(value, deep) {
+                    try {
+                        deep = deep || 0;
+                        if (value == null) {
+                            return 'null';
+                        } else if (typeof value === 'number') {
+                            return isFinite(value) ? value.toString() : 'null';
+                        } else if (typeof value === 'boolean') {
+                            return value.toString();
+                        } else if (typeof value === 'object' && deep < 5) {
+                            if (typeof value.toJSON === 'function') {
+                                return stringifyLocal(value.toJSON(), deep + 1);
+                            } else if (isArray(value)) {
+                                var res = '[';
+                                for (var i = 0; i < value.length; i++)
+                                    res += (i ? ', ' : '') + stringifyLocal(value[i], deep + 1);
+                                return res + ']';
+                            } else if (
+                                toString.call(value) === '[object Object]' ||
+                                toString.call(value) === '[object ErrorEvent]' ||
+                                toString.call(value) === '[object CustomEvent]'
+                            ) {
+                                if (visitedObjs.indexOf(value) > -1 && deep > 0) {
+                                    return stringifyLocal('[Visited Object]' + value.toString(), deep + 1);
+                                } else {
+                                    if (value instanceof HTMLElement) return '"element ' + value.nodeName + '"';
+                                    visitedObjs.push(value);
+                                    var tmp = [];
+                                    for (var k in value) {
+                                        if (typeof value[k] === 'function') continue;
+                                        tmp.push(stringifyLocal(k) + ': ' + stringifyLocal(value[k], deep + 1));
+                                    }
+                                    return '{' + tmp.join(', ') + '}';
+                                }
+                            }
+                        }
+                        return '"' + (value ? value.toString().replace(escRE, escFunc) : value) + '"';
+                    } catch (error) {
+                        return 'customize stringify error!!';
+                    }
+                }
+                return stringifyLocal(value);
+            };
+
+            // 针对脚本异常
+            window.addEventListener &&
+                window.addEventListener('error', function(event) {
+                    var message = event.message;
+                    var filename = event.filename;
+                    //var lineno = event.lineno || 0;
+                    //var colno = event.colno || 0;
+                    //var stack = event.error? event.error.stack: event.stack;
+                    var eventid = 'global_error';
+                    var level = 'error';
+                    if ('Script error.' === message) {
+                        eventid = 'global_info';
+                        level = 'info';
+                    }
+                    window.__jtLogger({
+                        eventid: eventid,
+                        level: level,
+                        content: stringify(event),
+                        file: filename,
+                    });
+                });
+
+            // 针对未处理的Promise.reject
+            window.addEventListener &&
+                window.addEventListener('unhandledrejection', function(event) {
+                    var type = event.type;
+                    var reason = event.reason || '';
+                    var stack = reason.stack || event.stack || '';
+                    var msg = reason.message || stringify(reason);
+                    var level = 'error';
+                    if (msg.indexOf('Redirected when going from') > -1) level = 'info';
+                    window.__jtLogger({
+                        eventid: 'unhandledrejection',
+                        level: level,
+                        content:
+                            '[unhandled rejection]type ' +
+                            type +
+                            ' reason::' +
+                            (reason.message || stringify(reason)) +
+                            ' stack::' +
+                            stringify(stack),
+                        file: event.filename || '',
+                    });
+                });
+        </script>
+        <script>
+            var accTimeViaMiniApp = (location.href.match(/app_redirect_time=(\d+)/) || [])[1];
+            window.__cust_perf_dataok = accTimeViaMiniApp || Date.now();
+        </script>
+        <script>
+            // intercept data AOT per page per cmdname
+            (function() {
+                if (window.__underMaintenance) {
+                    return;
+                }
+                try {
+                    if (window.Promise) {
+                        var UA = navigator.userAgent;
+                        var VER_ZXG = UA.match(/qqstock\/([\d.]+)/i) && UA.match(/qqstock\/([\d.]+)/i)[1];
+                        var IS_ZXG = Boolean(VER_ZXG);
+                        var currentRouteMatch = location.href.match(/jv\/v\d\/([\w\d]+\/[\w\d]+)/i);
+                        var currentRoute = (currentRouteMatch && currentRouteMatch[1]) || 'shelves/index';
+                        var isTest = location.host === 'test.ciccten.com';
+                        var channel = 2;
+                        var includes = function(list, item) {
+                            return list.indexOf(item) !== -1;
+                        };
+
+                        var cgiDomain = location.hostname;
+
+                        if (
+                            includes(
+                                ['lct.ciccten.com', 'jt.ciccten.com', 'jtecdn.ciccten.com', 'jt-global.ciccten.com'],
+                                location.hostname
+                            )
+                        ) {
+                            if (location.hostname === 'lct.ciccten.com') {
+                                channel = IS_ZXG ? 3 : 1;
+                            }
+                            cgiDomain = 'cgi-global.ciccten.com';
+                        } else {
+                            // 测试环境判断
+                            var isDevPreLCTChannel =
+                                includes(location.search, '__is_in_channel=LCT') ||
+                                sessionStorage.getItem('__is_in_channel') === 'LCT';
+                            var isDevPreZXGChannel =
+                                includes(location.search, '__is_in_channel=ZXG') ||
+                                sessionStorage.getItem('__is_in_channel') === 'ZXG';
+                            if (isDevPreZXGChannel) {
+                                channel = 3;
+                            } else if (isDevPreLCTChannel) {
+                                channel = 1;
+                            }
+                            if (location.hostname === 'r1.pre.ciccten.com') {
+                                cgiDomain = 'cgi-pre.ciccten.com';
+                            }
+                        }
+                        var aotGlobalVarMapping = {
+                            'shelves/index': {
+                                GetGoodsShelvesProductList: {
+                                    globalVar: 'AOTGetGoodsShelvesProductList',
+                                    data: {
+                                        visible_channel: channel,
+                                    },
+                                },
+                                GetUserTraceByTraceId: {
+                                    globalVar: 'AOTHasQualifiedStatementTrace',
+                                    data: {
+                                        trace_ids: [isTest ? '4' : '1'],
+                                    },
+                                },
+                            },
+                        };
+                        // 请求
+                        function serverRequest(cmdname, data, domain, callback) {
+                            var xhr = new XMLHttpRequest();
+                            xhr.onreadystatechange = function() {
+                                try {
+                                    if (xhr.readyState === 4) {
+                                        if (xhr.status === 200) {
+                                            var rsp = JSON.parse(xhr.responseText);
+                                            callback && callback(null, rsp);
+                                        } else {
+                                            if (domain) serverRequest(cmdname, data, '', callback);
+                                            else {
+                                                callback && callback(xhr.status);
+                                            }
+                                        }
+                                    }
+                                } catch (e) {
+                                    callback && callback(e);
+                                }
+                            };
+                            var url = '/fcgi/common.fcgi?cmdname=' + cmdname + '&t=' + Date.now();
+                            if (domain) {
+                                url = '//' + domain + url;
+                            }
+                            xhr.open('POST', url, true);
+                            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                            // 跨域
+                            if (domain !== location.hostname) xhr.withCredentials = true;
+                            xhr.send(
+                                Object.keys(data)
+                                    .map(function(it) {
+                                        return it + '=' + data[it];
+                                    })
+                                    .join('&')
+                            );
+                        }
+                        Object.keys(aotGlobalVarMapping).forEach(function(route) {
+                            if (
+                                route === currentRoute &&
+                                /login_id=\d+/.test(document.cookie) &&
+                                /device_id=[\d\w]+/.test(document.cookie) &&
+                                /token=[\d\w]+/.test(document.cookie)
+                            ) {
+                                Object.keys(aotGlobalVarMapping[route]).forEach(function(cmdname) {
+                                    var globalVar = aotGlobalVarMapping[route][cmdname].globalVar;
+                                    var data = {};
+                                    // TODO: g_tk?
+                                    data.param = JSON.stringify(aotGlobalVarMapping[route][cmdname].data || '{}');
+                                    data.cmdname = cmdname;
+                                    window[globalVar] = new Promise(function(rs, rj) {
+                                        serverRequest(cmdname, data, cgiDomain, function(err, rsp) {
+                                            if (err || !rsp) rj();
+                                            else {
+                                                if (rsp.ret === 0) {
+                                                    rs(rsp);
+                                                } else {
+                                                    rj(rsp);
+                                                }
+                                            }
+                                        });
+                                    });
+                                });
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            })();
+        </script>
+        <script>
+            // see https://github.com/GoogleChromeLabs/tti-polyfill/blob/0820038d38961e486f3887cb5f03b450299a6e7d/README.md#usage
+            !(function() {
+                if ('PerformanceLongTaskTiming' in window) {
+                    var g = (window.__tti = {
+                        e: [],
+                    });
+                    g.o = new PerformanceObserver(function(l) {
+                        g.e = g.e.concat(l.getEntries());
+                    });
+                    g.o.observe({
+                        entryTypes: ['longtask'],
+                    });
+                }
+            })();
+        </script>
+        <script>
+            // 神奇科技，触发微信jsbridge尽早生效
+            console.log('weixin://preInjectJSBridge/start');
+        </script>
+        <script>
+            if (/debug=lazy/.test(location.href)) {
+                debugger;
+            }
+            if (/debug=alert/.test(location.href)) {
+                window.addEventListener(
+                    'error',
+                    function(event) {
+                        console.error(event);
+                        var message = [event.message || 'unknown error', '\r\n'];
+                        if (event.filename && event.lineno && event.colno) {
+                            message.push(event.filename, '#L', event.lineno, ':', event.colno, '\r\n');
+                        }
+                        message.push('-----\r\n');
+                        message.push(navigator.userAgent, '\r\n');
+                        message.push('-----\r\n');
+                        message.push(location.href);
+                        alert(message.join(''));
+                    },
+                    true
+                );
+            }
+        </script>
   </head>
   <body>
     <noscript>
