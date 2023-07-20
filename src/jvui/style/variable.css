@@ -1,6 +1,0 @@
-:root {
-    --color-primary: black;
-}
-[data-theme='red'] {
-    --color-primary: red;
-}

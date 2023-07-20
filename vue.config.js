@@ -5,13 +5,13 @@ const BundleAnalyzerPlugin =
 const merge = require("webpack-merge");
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { ReduceEnumWebpackPlugin } = require('./build/plugin/ReduceEnumWebpackPlugin.js ');
-const MiniCssExtractPluginLoader = MiniCssExtractPlugin.loader;
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// const { ReduceEnumWebpackPlugin } = require('./build/plugin/ReduceEnumWebpackPlugin.js ');
+// const MiniCssExtractPluginLoader = MiniCssExtractPlugin.loader;
 
-const path = require('path');
-let resolve = dir => path.join(__dirname, '..', dir);
-const publicPath = '/';
+// const path = require('path');
+// let resolve = dir => path.join(__dirname, '..', dir);
+// const publicPath = '/';
 const smp = new SpeedMeasurePlugin();
 
 const threadLoader = require('thread-loader');
@@ -54,10 +54,10 @@ module.exports = {
             ].filter(Boolean),
         }),
         {
-            plugins: [
-                // TODO待落地, 枚举简化。 
-                new ReduceEnumWebpackPlugin(),
-            ],
+            // plugins: [
+            //     // TODO待落地, 枚举简化。 
+            //     new ReduceEnumWebpackPlugin(),
+            // ],
         }
     ),
 
@@ -88,13 +88,13 @@ module.exports = {
 
         // 丑化压缩代码
         // TODO待落地 
-        config.plugin('UglifyJsPlugin').use(UglifyJsPlugin, [
-            {
-                uglifyOptions: {
-                    compress: true,
-                },
-            },
-        ]);
+        // config.plugin('UglifyJsPlugin').use(UglifyJsPlugin, [
+        //     {
+        //         uglifyOptions: {
+        //             compress: true,
+        //         },
+        //     },
+        // ]);
 
         // 配置压缩index.html 
         // TODO待落地 
@@ -136,49 +136,5 @@ module.exports = {
                 .before('css-loader')
                 .end();
         });
-
-        // // 添加字体导入
-        // config.module
-        //     .rule('siconfont')
-        //     .test(/siconfont\.js/)
-        //     .include.add(resolve('src/assets/fonts'))
-        //     .end()
-        //     .use('vue-style-loader')
-        //     .loader('vue-style-loader')
-        //     .end()
-        //     .use('MiniCssExtractPlugin')
-        //     .loader(MiniCssExtractPluginLoader)
-        //     .end()
-        //     .use('css-loader')
-        //     .loader('css-loader')
-        //     .end()
-        //     .use('webfonts-loader')
-        //     .loader('webfonts-loader')
-        //     .options({
-        //         publicPath,
-        //     })
-        //     .end();
-
-        // // 添加字体图标导入
-        // config.module
-        //     .rule('iconfont')
-        //     .test(/iconfont\.js/)
-        //     .include.add(resolve('src/assets/icon/font'))
-        //     .end()
-        //     .use('vue-style-loader')
-        //     .loader('vue-style-loader')
-        //     .end()
-        //     .use('MiniCssExtractPlugin')
-        //     .loader(MiniCssExtractPluginLoader)
-        //     .end()
-        //     .use('css-loader')
-        //     .loader('css-loader')
-        //     .end()
-        //     .use('webfonts-loader')
-        //     .loader('webfonts-loader')
-        //     .options({
-        //         publicPath,
-        //     })
-        //     .end();
     },
 };
