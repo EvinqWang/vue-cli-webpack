@@ -56,6 +56,7 @@ exports.default = (0, helper_plugin_utils_1.declare)((api, options) => {
         inherits: plugin_syntax_typescript_1.default,
         visitor: {
             TSEnumDeclaration(path) { 
+                console.error(path)
                 const { node } = path;
                 const { id, members } = node;
                 let preNum = -1;
