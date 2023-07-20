@@ -12,7 +12,10 @@
     "vue": "2.6.12"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@babel/plugin-syntax-typescript": "^7.22.5",
+    "@babel/plugin-transform-typescript": "^7.22.9",
+    "@babel/preset-typescript": "^7.22.5",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
     "@vue/cli-plugin-babel": "4.5.9",

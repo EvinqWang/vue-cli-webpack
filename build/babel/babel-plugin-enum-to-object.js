@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const helper_plugin_utils_1 = require("@babel/helper-plugin-utils");
-// @ts-ignore
 const plugin_syntax_typescript_1 = require("@babel/plugin-syntax-typescript");
 const t = require("@babel/types");
 const generator_1 = require("@babel/generator");
@@ -43,19 +42,20 @@ function getValueFromBinaryExpression(node, mapValue, unMapValue = []) {
         return leftValue | rightValue;
     if (operator === '^')
         return leftValue ^ rightValue;
-    if (operator === '&') 
+    if (operator === '&')
         return leftValue & rightValue;
     return 0;
-} 
+}
 exports.default = (0, helper_plugin_utils_1.declare)((api, options) => {
     api.assertVersion(7);
-    const { types: t } = api; 
+    const { types: t } = api;
     const { reflect = true } = options;
     return {
         name: 'enum-to-object',
         inherits: plugin_syntax_typescript_1.default,
         visitor: {
-            TSEnumDeclaration(path) { 
+            TSEnumDeclaration(path) {
+                debugger    
                 console.error(path)
                 const { node } = path;
                 const { id, members } = node;
@@ -98,10 +98,12 @@ exports.default = (0, helper_plugin_utils_1.declare)((api, options) => {
                 const constObjVariable = t.variableDeclaration('const', [obj]);
                 path.replaceWith(constObjVariable);
             },
-            // Identifier(path, state) {
-            //     let name = path.node.name;
-            //     // console.error(name, state);
-            // }
+            Identifier(path, state) {
+                    if (state.filename.endsWith('Errcode.ts')) {
+                        debugger
+                        console.error(state.file.code);
+                    }
+            }
         },
     };
 });

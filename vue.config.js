@@ -136,5 +136,9 @@ module.exports = {
                 .before('css-loader')
                 .end();
         });
+
+        config.module.rules.delete('eslint');
+        config.module.rule('ts').uses.delete('ts-loader');
+        config.module.rule('tsx').uses.delete('ts-loader');
     },
 };

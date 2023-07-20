@@ -1,11 +1,18 @@
 module.exports = {
-    plugins: [
-        ['./build/babel/babel-plugin-enum-to-object.js', {
-            // reflect: true // 默认值 代表需要反射值
-            reflect: true // 代表不需要反射值
-        }]
-    ],
     presets: [
-        '@vue/cli-plugin-babel/preset'
-    ]
-}
+        // ['@vue/app'],
+        ['@vue/cli-plugin-babel/preset'],
+        [
+            '@babel/preset-typescript',
+            {
+                allExtensions: true,
+                isTSX: true,
+            },
+        ],
+    ],
+    plugins: [
+        ['./build/babel/babel-plugin-enum-to-object', { reflect: false }],
+        ['@babel/plugin-proposal-optional-chaining'],
+        ['@babel/plugin-transform-typescript'],
+    ],
+};
